@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Crunchyroll</title>
+<style>
+:root{--or:#F47521;--or2:#FF7B2E;--dk:#000;--gray:#1a1a1a;--gray2:#23252B;--tx:#fff;--mt:#A0A0A0;}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;}
+body{background:var(--dk);color:var(--tx);min-height:100vh;overflow-x:hidden;}
+
+/* ── LOADING ── */
+#LS{position:fixed;inset:0;background:#000;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:fadeLS .5s ease 3s forwards;}
+.ld-logo{animation:popIn .8s cubic-bezier(.34,1.56,.64,1) .3s both;}
+.ld-logo img{width:190px;height:auto;object-fit:contain;display:block;}
+.ld-sub{color:var(--mt);font-size:11px;margin-top:18px;letter-spacing:3px;text-transform:uppercase;animation:fadeUp .5s ease 1.1s both;}
+.ld-track{width:220px;height:3px;background:rgba(255,255,255,.1);border-radius:99px;margin-top:30px;animation:fadeUp .5s ease 1.2s both;}
+.ld-fill{height:100%;background:var(--or);border-radius:99px;animation:fillBar 2s ease 1.3s both;}
+@keyframes popIn{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fillBar{from{width:0}to{width:100%}}
+@keyframes fadeLS{from{opacity:1;pointer-events:all}to{opacity:0;pointer-events:none}}
+
+/* ── PROFILE ── */
+#PS{position:fixed;inset:0;z-index:8000;display:none;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;}
+#PS .bg{position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1522383225653-ed111181a951?w=1920&q=80') center/cover no-repeat;}
+#PS .ov{position:absolute;inset:0;background:rgba(0,0,0,.55);}
+#petals{position:absolute;inset:0;pointer-events:none;}
+#PS.on{display:flex;}
+.ps-h{position:relative;font-size:32px;font-weight:700;color:#fff;margin-bottom:44px;text-shadow:0 2px 14px rgba(0,0,0,.7);}
+.ps-row{position:relative;display:flex;gap:48px;flex-wrap:wrap;justify-content:center;}
+.ps-item{display:flex;flex-direction:column;align-items:center;gap:12px;cursor:pointer;transition:transform .22s;}
+.ps-item:hover{transform:scale(1.09);}
+.ps-aw{position:relative;}
+.ps-av{width:140px;height:140px;border-radius:50%;border:3px solid rgba(255,255,255,.25);object-fit:cover;display:block;transition:border-color .2s;}
+.ps-item:hover .ps-av{border-color:var(--or);}
+.ps-lk{position:absolute;bottom:4px;right:4px;width:26px;height:26px;background:#111;border-radius:50%;border:2px solid #555;display:flex;align-items:center;justify-content:center;font-size:11px;}
+.ps-name{font-size:14px;font-weight:600;color:#ddd;}
+.ps-btns{position:relative;margin-top:44px;display:flex;flex-direction:column;align-items:center;gap:14px;}
+.btn-mg{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.6);padding:10px 36px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;}
+.btn-mg:hover{border-color:#fff;}
+.btn-lo{background:none;border:none;color:var(--mt);font-size:14px;cursor:pointer;}
+.btn-lo:hover{color:#fff;}
+
+/* ── PIN ── */
+#PM{position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.93);display:none;align-items:center;justify-content:center;}
+#PM.on{display:flex;}
+.pb{background:#18181d;border-radius:12px;padding:46px 56px;text-align:center;min-width:320px;}
+.pb h2{font-size:21px;margin-bottom:8px;}
+.pb p{color:var(--mt);font-size:13px;margin-bottom:24px;}
+.prow{display:flex;gap:12px;justify-content:center;margin-bottom:20px;}
+.pd{width:54px;height:60px;border-radius:8px;border:2px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#fff;font-size:28px;font-weight:700;text-align:center;outline:none;transition:border-color .2s;}
+.pd:focus{border-color:var(--or);}
+.perr{color:#ff4545;font-size:13px;min-height:18px;margin-bottom:8px;}
+.pcnl{background:none;border:none;color:var(--mt);font-size:13px;cursor:pointer;margin-top:4px;}
+.pcnl:hover{color:#fff;}
+
+/* ── MAIN ── */
+#MA{display:none;}
+#MA.on{display:block;}
+
+/* ── NAV ── */
+.nav{position:fixed;top:0;left:0;right:0;height:62px;background:linear-gradient(to bottom,rgba(0,0,0,.98) 0%,rgba(0,0,0,.7) 65%,transparent 100%);display:flex;align-items:center;padding:0 36px;z-index:1000;gap:16px;transition:background .3s;}
+.nav.sc{background:#0a0a0e;}
+.nl{display:flex;align-items:center;cursor:pointer;flex-shrink:0;}
+.nl img{height:32px;width:auto;object-fit:contain;}
+.nls{display:flex;gap:20px;flex:1;}
+.nlk{color:rgba(255,255,255,.8);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap;transition:color .2s;}
+.nlk:hover,.nlk.act{color:var(--or);}
+.nr{display:flex;align-items:center;gap:11px;flex-shrink:0;}
+.si{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:7px 12px;color:#fff;width:180px;font-size:12px;outline:none;}
+.si::placeholder{color:rgba(255,255,255,.38);}
+.si:focus{border-color:rgba(255,255,255,.35);}
+.mlb{background:none;border:1px solid rgba(255,255,255,.22);color:#fff;padding:6px 12px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;text-transform:uppercase;transition:all .2s;}
+.mlb:hover{border-color:var(--or);color:var(--or);}
+.nav-av{width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,.2);object-fit:cover;cursor:pointer;}
+.nav-av:hover{border-color:var(--or);}
+
+/* ── MY LIST ── */
+#MLP{position:fixed;inset:0;z-index:7000;background:rgba(0,0,0,.97);display:none;flex-direction:column;overflow-y:auto;padding:76px 56px 56px;}
+#MLP.on{display:flex;}
+.mlh{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
+.mlh h2{font-size:24px;font-weight:800;}
+.mltabs{display:flex;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:24px;}
+.mlt{padding:11px 24px;font-size:12px;font-weight:700;cursor:pointer;border-bottom:3px solid transparent;color:var(--mt);text-transform:uppercase;letter-spacing:.5px;margin-bottom:-1px;transition:all .2s;}
+.mlt.act{color:#fff;border-bottom-color:var(--or);}
+.mlg{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:14px;}
+.mlc{position:relative;cursor:pointer;border-radius:4px;overflow:hidden;background:var(--gray2);}
+.mlc img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block;}
+.mlci{padding:8px 10px;}
+.mlct{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mlcs{font-size:10px;color:var(--or);font-weight:700;text-transform:uppercase;margin-top:2px;}
+.mlrm{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.8);border:none;color:#fff;width:22px;height:22px;border-radius:50%;font-size:13px;cursor:pointer;display:none;align-items:center;justify-content:center;}
+.mlc:hover .mlrm{display:flex;}
+.mle{color:var(--mt);font-size:15px;text-align:center;padding:60px 0;width:100%;}
+
+/* ── VIEW ALL ── */
+#VA{position:fixed;inset:0;z-index:6500;background:rgba(0,0,0,.97);display:none;flex-direction:column;overflow-y:auto;padding:76px 56px 56px;}
+#VA.on{display:flex;}
+.vah{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
+.vah h2{font-size:24px;font-weight:800;}
+.vag{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:14px;}
+
+/* ── HERO ── */
+.hero{position:relative;height:80vh;min-height:520px;display:flex;align-items:center;padding:0 56px;margin-top:-62px;padding-top:62px;}
+.hbg{position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1920') center/cover;}
+.hgr{position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,.93) 0%,rgba(0,0,0,.5) 55%,rgba(0,0,0,.06) 100%);}
+.hc{position:relative;z-index:2;max-width:500px;}
+.hbdg{display:inline-block;background:var(--or);color:#fff;padding:3px 10px;border-radius:3px;font-size:11px;font-weight:800;text-transform:uppercase;margin-bottom:12px;letter-spacing:.5px;}
+.htt{font-size:46px;font-weight:900;margin-bottom:12px;line-height:1.05;}
+.hm{display:flex;gap:10px;margin-bottom:12px;font-size:12px;color:var(--mt);align-items:center;flex-wrap:wrap;}
+.hd{font-size:13px;line-height:1.7;color:rgba(255,255,255,.65);margin-bottom:24px;}
+.hbs{display:flex;gap:10px;flex-wrap:wrap;}
+.bp{background:var(--or);color:#fff;border:none;padding:12px 24px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .2s;text-transform:uppercase;letter-spacing:.5px;}
+.bp:hover{background:var(--or2);}
+.bo{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.3);padding:12px 20px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;}
+.bo:hover{background:rgba(255,255,255,.2);}
+.bal{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.28);padding:12px 18px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;}
+.bal:hover,.bal.add{border-color:var(--or);color:var(--or);}
+.bal.add{background:rgba(244,117,33,.1);}
+
+/* ── CAT TABS ── */
+.ctw{padding:0 56px;background:var(--dk);}
+.cts{display:flex;overflow-x:auto;scrollbar-width:none;border-bottom:2px solid rgba(255,255,255,.07);}
+.cts::-webkit-scrollbar{display:none;}
+.ct{flex:0 0 auto;padding:12px 18px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;color:var(--mt);border-bottom:3px solid transparent;margin-bottom:-2px;text-transform:uppercase;letter-spacing:.5px;transition:all .2s;}
+.ct:hover{color:#fff;}
+.ct.act{color:#fff;border-bottom-color:var(--or);}
+
+/* ── SECTIONS ── */
+.sec{padding:24px 56px;}
+.sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.st{font-size:20px;font-weight:800;color:var(--or);}
+.va-btn{color:var(--tx);background:none;border:none;font-size:12px;font-weight:600;cursor:pointer;opacity:.7;}
+.va-btn:hover{opacity:1;}
+
+/* ── CAROUSEL ── */
+.car{display:flex;gap:10px;overflow-x:auto;scroll-behavior:smooth;padding-bottom:8px;scrollbar-width:none;}
+.car::-webkit-scrollbar{display:none;}
+
+/* ── PORTRAIT CARD ── */
+.pc{flex:0 0 auto;width:168px;cursor:pointer;transition:transform .25s;}
+.pc:hover{transform:translateY(-5px);}
+.pci{position:relative;width:168px;height:238px;overflow:hidden;background:var(--gray2);}
+.pci img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s;}
+.pc:hover .pci img{transform:scale(1.05);}
+.pco{position:absolute;inset:0;background:rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .25s;}
+.pc:hover .pco{opacity:1;}
+.pplay{width:44px;height:44px;background:var(--or);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.pfv{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.72);border:none;color:#fff;width:26px;height:26px;border-radius:50%;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;}
+.pc:hover .pfv{opacity:1;}
+.pfv.fv{opacity:1;color:var(--or);}
+.pcf{padding:8px 0 0;}
+.pct{font-size:13px;font-weight:600;line-height:1.35;max-height:2.7em;overflow:hidden;color:#fff;}
+.pcs{font-size:11px;color:var(--mt);margin-top:4px;}
+
+/* ── CONTINUE WATCHING CARD ── */
+.cwc{flex:0 0 auto;width:290px;cursor:pointer;}
+.cw-img{position:relative;width:290px;height:163px;overflow:hidden;background:var(--gray2);}
+.cw-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s;}
+.cwc:hover .cw-img img{transform:scale(1.04);}
+.cw-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;background:rgba(0,0,0,.38);transition:opacity .25s;}
+.cwc:hover .cw-play{opacity:1;}
+.cw-play-btn{width:46px;height:46px;background:rgba(255,255,255,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;color:#000;}
+.cw-timeleft{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.78);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:3px;}
+.cw-prog{position:absolute;bottom:0;left:0;right:0;height:4px;background:rgba(255,255,255,.2);}
+.cw-prog-fill{height:100%;background:var(--or);}
+.cw-fav{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.72);border:none;color:#fff;width:26px;height:26px;border-radius:50%;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;}
+.cwc:hover .cw-fav{opacity:1;}
+.cw-fav.fv{opacity:1;color:var(--or);}
+.cw-info{padding:10px 0 0;}
+.cw-show{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mt);margin-bottom:4px;}
+.cw-ep{font-size:14px;font-weight:700;line-height:1.3;color:#fff;margin-bottom:5px;}
+.cw-sub{font-size:11px;color:var(--mt);display:flex;justify-content:space-between;align-items:center;}
+.cw-more{background:none;border:none;color:var(--mt);font-size:18px;cursor:pointer;line-height:1;}
+
+/* ── MANGA ── */
+.mgs{background:#0c0c0f;padding:40px 56px;}
+.mgh{text-align:center;margin-bottom:30px;}
+.mgh h2{font-size:26px;font-weight:900;margin-bottom:6px;}
+.mgh p{color:var(--mt);font-size:13px;}
+.mgcar{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;}
+.mgcar::-webkit-scrollbar{display:none;}
+.mgc{flex:0 0 auto;width:150px;cursor:pointer;transition:transform .25s;}
+.mgc:hover{transform:translateY(-6px);}
+.mgcv{position:relative;width:150px;height:225px;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,.5);}
+.mgcv img{width:100%;height:100%;object-fit:cover;display:block;}
+.mglbl{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.88),transparent);padding:14px 6px 6px;}
+.mgtg{background:var(--or);color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:3px;}
+.mgfv{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.72);border:none;color:#fff;width:24px;height:24px;border-radius:50%;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;}
+.mgc:hover .mgfv{opacity:1;}
+.mgfv.fv{opacity:1;color:var(--or);}
+.mgif{padding:8px 0 0;}
+.mgit{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mgiv{font-size:10px;color:var(--mt);margin-top:2px;}
+
+/* ── VIDEO MODAL ── */
+#VM{position:fixed;inset:0;background:rgba(0,0,0,.97);display:none;align-items:center;justify-content:center;z-index:6000;padding:14px;}
+#VM.on{display:flex;}
+.vmb{width:100%;max-width:1000px;background:#14141a;border-radius:10px;overflow:hidden;}
+.vmt{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.07);}
+.vmttl{font-size:18px;font-weight:800;}
+.vmx{background:none;border:none;color:#fff;font-size:24px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%;}
+.vmx:hover{background:rgba(255,255,255,.1);}
+.vmbd{padding:16px;}
+.vw{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:4px;overflow:hidden;}
+#mif{width:100%;height:100%;border:none;}
+.vmc{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.vmc select{background:#23252B;color:#fff;border:1px solid rgba(255,255,255,.12);padding:8px 13px;border-radius:4px;font-size:12px;cursor:pointer;}
+
+/* ── DOTS ── */
+.dots{display:flex;justify-content:center;align-items:center;height:140px;gap:7px;}
+.dots span{width:8px;height:8px;background:var(--or);border-radius:50%;animation:dot 1.4s infinite ease-in-out both;}
+.dots span:nth-child(1){animation-delay:-.32s;}
+.dots span:nth-child(2){animation-delay:-.16s;}
+@keyframes dot{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
+.xbtn{background:none;border:none;color:#fff;font-size:26px;cursor:pointer;line-height:1;}
+
+/* ── ERR MSG ── */
+.err-msg{color:var(--mt);padding:30px 20px;font-size:13px;text-align:center;}
+.err-msg button{background:var(--or);border:none;color:#fff;padding:8px 18px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;margin-top:10px;display:block;margin-left:auto;margin-right:auto;}
+
+@media(max-width:768px){
+  .nav{padding:0 12px;}.nls{display:none;}.hero{padding:0 16px;}.htt{font-size:26px;}
+  .sec{padding:16px;}.ctw{padding:0 16px;}.mgs{padding:20px 16px;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="LS">
+  <div class="ld-logo">
+    <img src="https://static.crunchyroll.com/cxweb/assets/img/og-image.png" alt="Crunchyroll" onerror="this.src='https://via.placeholder.com/190x90/F47521/fff?text=CRUNCHYROLL'">
+  </div>
+  <div class="ld-sub">Your Anime Destination</div>
+  <div class="ld-track"><div class="ld-fill"></div></div>
+</div>
+
+<!-- PROFILE -->
+<div id="PS">
+  <div class="bg"></div><div class="ov"></div>
+  <canvas id="petals"></canvas>
+  <h2 class="ps-h">Who's going on an adventure?</h2>
+  <div class="ps-row">
+    <div class="ps-item" onclick="selPro('ClassroomSpot',true)">
+      <div class="ps-aw">
+        <img class="ps-av" src="https://th.bing.com/th/id/OIP.bIi2s4PyqCFTj2CBrn7regHaHa?w=203&h=203&c=7&r=0&o=7&pid=1.7&rm=3" alt="ClassroomSpot" onerror="this.src='https://via.placeholder.com/140x140/F47521/fff?text=CS'">
+        <div class="ps-lk">&#128274;</div>
+      </div>
+      <span class="ps-name">ClassroomSpot</span>
+    </div>
+    <div class="ps-item" onclick="selPro('ClassroomSpot User',false)">
+      <div class="ps-aw">
+        <img class="ps-av" src="https://th.bing.com/th/id/OIP.X8dDFPFR047F_YYEGsl18QHaEo?w=278&h=180&c=7&r=0&o=7&pid=1.7&rm=3" alt="ClassroomSpot User" onerror="this.src='https://via.placeholder.com/140x140/333/fff?text=CSU'">
+      </div>
+      <span class="ps-name">ClassroomSpot User</span>
+    </div>
+  </div>
+  <div class="ps-btns">
+    <button class="btn-mg">Manage Profiles</button>
+    <button class="btn-lo">Log Out</button>
+  </div>
+</div>
+
+<!-- PIN -->
+<div id="PM">
+  <div class="pb">
+    <h2>Profile Lock</h2>
+    <p>Enter PIN for <span id="pname">ClassroomSpot</span></p>
+    <div class="prow">
+      <input class="pd" type="password" maxlength="1" id="d1" inputmode="numeric">
+      <input class="pd" type="password" maxlength="1" id="d2" inputmode="numeric">
+      <input class="pd" type="password" maxlength="1" id="d3" inputmode="numeric">
+      <input class="pd" type="password" maxlength="1" id="d4" inputmode="numeric">
+    </div>
+    <div class="perr" id="perr"></div>
+    <button class="pcnl" onclick="cnlPin()">Cancel</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="MA">
+  <nav class="nav" id="nav">
+    <div class="nl" onclick="goHome()">
+      <img src="https://static.crunchyroll.com/cxweb/assets/img/og-image.png" alt="Crunchyroll" onerror="this.src='https://via.placeholder.com/110x30/F47521/fff?text=CR'">
+    </div>
+    <div class="nls">
+      <span class="nlk act" onclick="goHome()">Home</span>
+      <span class="nlk" onclick="jmp('ts')">Trending</span>
+      <span class="nlk" onclick="catClick('action')">Action</span>
+      <span class="nlk" onclick="catClick('fantasy')">Fantasy</span>
+      <span class="nlk" onclick="catClick('romance')">Romance</span>
+      <span class="nlk" onclick="catClick('comedy')">Comedy</span>
+      <span class="nlk" onclick="jmp('mgs')">Manga</span>
+      <span class="nlk" onclick="jmp('movs')">Movies</span>
+    </div>
+    <div class="nr">
+      <input class="si" type="text" id="si" placeholder="Search anime..." onkeyup="doSearch(event)">
+      <button class="mlb" onclick="openML()">My List</button>
+      <img class="nav-av" id="nav-av" src="" alt="" onerror="this.style.display='none'">
+    </div>
+  </nav>
+
+  <!-- MY LIST -->
+  <div id="MLP">
+    <div class="mlh"><h2>My List</h2><button class="xbtn" onclick="closeML()">&#215;</button></div>
+    <div class="mltabs">
+      <div class="mlt act" onclick="swML('anime',this)">Anime</div>
+      <div class="mlt" onclick="swML('manga',this)">Manga</div>
+    </div>
+    <div class="mlg" id="mlg"></div>
+  </div>
+
+  <!-- VIEW ALL -->
+  <div id="VA">
+    <div class="vah"><h2 id="vat">All Anime</h2><button class="xbtn" onclick="closeVA()">&#215;</button></div>
+    <div class="vag" id="vag"></div>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hbg"></div><div class="hgr"></div>
+    <div class="hc">
+      <span class="hbdg">Trending Now</span>
+      <h1 class="htt">Attack on Titan</h1>
+      <div class="hm"><span>9.8</span><span>|</span><span>Sub | Dub</span><span>|</span><span>Action, Drama, Fantasy</span></div>
+      <p class="hd">Humanity lives inside cities surrounded by enormous walls due to the Titans, gigantic humanoid creatures who devour humans seemingly without reason.</p>
+      <div class="hbs">
+        <button class="bp" onclick="openAnime(16498,'Attack on Titan','tv')">&#9654; Start Watching E1</button>
+        <button class="bo" onclick="jmp('ts')">Browse All</button>
+        <button class="bal" id="hlb" onclick="togHero()">+ My List</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CAT TABS -->
+  <div class="ctw">
+    <div class="cts" id="cts">
+      <div class="ct act" data-cat="trending" onclick="catTab(this)">Trending US</div>
+      <div class="ct" data-cat="popular" onclick="catTab(this)">Most Popular</div>
+      <div class="ct" data-cat="toprated" onclick="catTab(this)">Top Rated</div>
+      <div class="ct" data-cat="action" onclick="catTab(this)">Action</div>
+      <div class="ct" data-cat="fantasy" onclick="catTab(this)">Fantasy</div>
+      <div class="ct" data-cat="romance" onclick="catTab(this)">Romance</div>
+      <div class="ct" data-cat="comedy" onclick="catTab(this)">Comedy</div>
+      <div class="ct" data-cat="sports" onclick="catTab(this)">Sports</div>
+      <div class="ct" data-cat="scifi" onclick="catTab(this)">Sci-Fi</div>
+      <div class="ct" data-cat="drama" onclick="catTab(this)">Drama</div>
+      <div class="ct" data-cat="mecha" onclick="catTab(this)">Mecha</div>
+      <div class="ct" data-cat="horror" onclick="catTab(this)">Horror</div>
+      <div class="ct" data-cat="slice" onclick="catTab(this)">Slice of Life</div>
+      <div class="ct" data-cat="isekai" onclick="catTab(this)">Isekai</div>
+    </div>
+  </div>
+
+  <!-- TRENDING (portrait) -->
+  <section class="sec" id="ts">
+    <div class="sh">
+      <h2 class="st" id="mct">Trending in the United States</h2>
+      <button class="va-btn" onclick="openVA('mct','mc')">View All</button>
+    </div>
+    <div class="car" id="mc"><div class="dots"><span></span><span></span><span></span></div></div>
+  </section>
+
+  <!-- CONTINUE WATCHING -->
+  <section class="sec">
+    <div class="sh">
+      <h2 class="st">Continue Watching</h2>
+      <button class="va-btn" onclick="openVA('Continue Watching','cc')">View History</button>
+    </div>
+    <div class="car" id="cc"><div class="dots"><span></span><span></span><span></span></div></div>
+  </section>
+
+  <!-- NEW EPISODES (portrait) -->
+  <section class="sec">
+    <div class="sh">
+      <h2 class="st">New Episodes Today</h2>
+      <button class="va-btn" onclick="openVA('New Episodes Today','nc')">View All</button>
+    </div>
+    <div class="car" id="nc"><div class="dots"><span></span><span></span><span></span></div></div>
+  </section>
+
+  <!-- TOP PICKS (portrait) — AniList powered -->
+  <section class="sec">
+    <div class="sh">
+      <h2 class="st">Top Picks for You</h2>
+      <button class="va-btn" onclick="openVA('Top Picks for You','tc')">View All</button>
+    </div>
+    <div class="car" id="tc"><div class="dots"><span></span><span></span><span></span></div></div>
+  </section>
+
+  <!-- POPULAR THIS SEASON (AniList) -->
+  <section class="sec">
+    <div class="sh">
+      <h2 class="st">Popular This Season</h2>
+      <button class="va-btn" onclick="openVA('Popular This Season','psc')">View All</button>
+    </div>
+    <div class="car" id="psc"><div class="dots"><span></span><span></span><span></span></div></div>
+  </section>
+
+  <!-- SIMULCASTS (portrait) -->
+  <section class="sec">
+    <div class="sh">
+      <h2 class="st">Simulcasts</h2>
+      <button class="va-btn" onclick="openVA('Simulcasts','sc2')">View All</button>
+    </div>
+    <div class="car" id="sc2"><div class="dots"><span></span><span></span><span></span></div></div>
+  </section>
+
+  <!-- ALL TIME FAVORITES (AniList) -->
+  <section class="sec">
+    <div class="sh">
+      <h2 class="st">All Time Favorites</h2>
+      <button class="va-btn" onclick="openVA('All Time Favorites','atf')">View All</button>
+    </div>
+    <div class="car" id="atf"><div class="dots"><span></span><span></span><span></span></div></div>
+  </section>
+
+  <!-- MANGA -->
+  <section class="mgs" id="mgs">
+    <div class="mgh"><h2>Crunchyroll Manga</h2><p>Hundreds of digital manga titles — all ad-free!</p></div>
+    <div class="mgcar" id="mgcar"></div>
+  </section>
+
+  <!-- MOVIES (portrait) -->
+  <section class="sec" id="movs">
+    <div class="sh">
+      <h2 class="st">Anime Movies</h2>
+      <button class="va-btn" onclick="openVA('Anime Movies','movc')">View All</button>
+    </div>
+    <div class="car" id="movc"><div class="dots"><span></span><span></span><span></span></div></div>
+  </section>
+
+  <!-- CLASSIC SERIES -->
+  <section class="sec">
+    <div class="sh">
+      <h2 class="st">Classic Series</h2>
+      <button class="va-btn" onclick="openVA('Classic Series','clc')">View All</button>
+    </div>
+    <div class="car" id="clc"><div class="dots"><span></span><span></span><span></span></div></div>
+  </section>
+</div>
+
+<!-- VIDEO MODAL -->
+<div id="VM">
+  <div class="vmb">
+    <div class="vmt">
+      <h3 class="vmttl" id="vmtl">Title</h3>
+      <button class="vmx" onclick="closeVM()">&#215;</button>
+    </div>
+    <div class="vmbd">
+      <div class="vw"><iframe id="mif" allowfullscreen allow="autoplay;fullscreen"></iframe></div>
+      <div class="vmc">
+        <select id="ssel" style="display:none"><option>Season 1</option></select>
+        <select id="esel" style="display:none"><option>Episode 1</option></select>
+        <select id="srvsel"><option value="">Select Server</option></select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─── CONFIG ─── */
+const PROS={
+  'ClassroomSpot':{pin:'9090',av:'https://th.bing.com/th/id/OIP.bIi2s4PyqCFTj2CBrn7regHaHa?w=203&h=203&c=7&r=0&o=7&pid=1.7&rm=3'},
+  'ClassroomSpot User':{pin:null,av:'https://th.bing.com/th/id/OIP.X8dDFPFR047F_YYEGsl18QHaEo?w=278&h=180&c=7&r=0&o=7&pid=1.7&rm=3'}
+};
+const MANGA=[
+  {t:'Pokemon Adventures',v:'Vol 1-58',i:'https://th.bing.com/th/id/OIP.kbfTqEH_YlWVssFk7TAe1AHaLH?w=203&h=304&c=7&r=0&o=7&pid=1.7&rm=3',l:'https://drive.google.com/drive/folders/1QKSJxCrNtvP7Li3lLz0GhuTV7WrbXMiS?usp=sharing'},
+  {t:'My Hero Academia',v:'Vol 1-2',i:'https://www.bing.com/th?id=OPHS.9IyxFqNaxTevSQ474C474&o=5&pid=21.1&w=140&h=200&qlt=100&dpr=1&c=8',l:'https://drive.google.com/drive/folders/1Ty8TRLsEhVwDR0mMXe9bvZw2Mjgqbfr7?usp=sharing'},
+  {t:'Demon Slayer',v:'Vol 1',i:'https://www.bing.com/th?id=OPHS.5RtjP%2bwYbcg95w474C474&o=5&pid=21.1&w=140&h=200&qlt=100&dpr=1&c=8',l:'https://drive.google.com/drive/folders/1mmBVdj-oKIC0aSdOcMcEnQ129-rKimKo?usp=sharing'},
+  {t:'Attack on Titan',v:'Vol 1',i:'https://th.bing.com/th/id/OIP.ti2jmsk0rbPaeKX0grGbAAHaJ4?w=149&h=191&c=7&r=0&o=7&pid=1.7&rm=3',l:'https://drive.google.com/drive/folders/1B46EboOes_-kq6jvdL1KSFAhrFMNk4Lj?usp=sharing'},
+  {t:'Blue Lock',v:'Vol 28',i:'https://tse1.mm.bing.net/th/id/OIP.v_tEHiVXEwVAufzigI7SyQHaKj?rs=1&pid=ImgDetMain&o=7&rm=3',l:'https://drive.google.com/drive/folders/1hcGBwfdgJchkPlZMX55YF52aZRNdbXW9?usp=sharing'},
+  {t:'Naruto',v:'Vol 1-73',i:'https://th.bing.com/th/id/OIP.EsBoj4fHc8YtoBBLLWZMHwHaLs?w=198&h=314&c=7&r=0&o=7&pid=1.7&rm=3',l:'https://drive.google.com/drive/folders/1y7t_DUetRveLBX2372YREdH4Zys6AvN2?usp=sharing'},
+  {t:'Chainsaw Man',v:'Vol 1-11',i:'https://tiermaker.com/images/templates/chainsawman-tier-list-1369034/13690341654615927.jpg',l:'https://drive.google.com/drive/folders/16KZIqJMkvzHeX8TsP_tOoLHSoqJwuWYf?usp=sharing'},
+  {t:'Spy x Family',v:'Vol 1',i:'https://th.bing.com/th/id/OIP.BCHuOooNVXB12bOR1uK2RwHaKl?w=203&h=289&c=7&r=0&o=7&pid=1.7&rm=3',l:'https://drive.google.com/drive/folders/1GZKLsvSvgvHfM3CXg4DrCh4d0tGb0NLX?usp=sharing'},
+  {t:'Death Note',v:'Vol 1',i:'https://th.bing.com/th/id/OIP.ZDZx3ShxJ4hZL-0-TbgR9wHaNK?w=187&h=333&c=7&r=0&o=7&pid=1.7&rm=3',l:'https://drive.google.com/drive/folders/1LNhG5Hjk4p9eJqvt0ooEpyAqnQRzJwYE?usp=sharing'}
+];
+
+const EP_LABELS=[
+  ['SHOMIN SAMPLE','E1 - Welcome, Commoner'],['ONE PIECE','E8 - Devil Fruit Power Showdown'],
+  ['DEMON SLAYER','E3 - Sabito and Makomo'],['ATTACK ON TITAN','E25 - The Wall'],
+  ['JUJUTSU KAISEN','E13 - Tomorrow'],['MY HERO ACADEMIA','E7 - Deku vs Kacchan'],
+  ['NARUTO','E30 - Bushy Brow Pledge'],['BLEACH','E10 - Death and Strawberry'],
+  ['DRAGON BALL Z','E45 - Transformed at Last'],['FULLMETAL ALCHEMIST','E2 - Body of the Sanctioned'],
+  ['SWORD ART ONLINE','E14 - The End of the World'],['RE:ZERO','E18 - From Zero'],
+  ['VINLAND SAGA','E22 - Inheritance'],['HUNTER X HUNTER','E58 - Combo and Combo'],
+  ['TOKYO GHOUL','E5 - Scar'],['FATE/ZERO','E11 - The Grail Dialogue']
+];
+
+/* Category tab → Jikan params */
+const CAT_CFG={
+  trending:{label:'Trending in the United States',jikan:'top/anime?filter=airing&limit=20'},
+  popular:{label:'Most Popular',jikan:'top/anime?filter=bypopularity&limit=20'},
+  toprated:{label:'Top Rated All Time',jikan:'top/anime?limit=20'},
+  action:{label:'Action Anime',jikan:'anime?genres=1&order_by=score&sort=desc&limit=20'},
+  fantasy:{label:'Fantasy Anime',jikan:'anime?genres=10&order_by=score&sort=desc&limit=20'},
+  romance:{label:'Romance Anime',jikan:'anime?genres=22&order_by=score&sort=desc&limit=20'},
+  comedy:{label:'Comedy Anime',jikan:'anime?genres=4&order_by=score&sort=desc&limit=20'},
+  sports:{label:'Sports Anime',jikan:'anime?genres=30&order_by=score&sort=desc&limit=20'},
+  scifi:{label:'Sci-Fi Anime',jikan:'anime?genres=24&order_by=score&sort=desc&limit=20'},
+  drama:{label:'Drama Anime',jikan:'anime?genres=8&order_by=score&sort=desc&limit=20'},
+  mecha:{label:'Mecha Anime',jikan:'anime?genres=18&order_by=score&sort=desc&limit=20'},
+  horror:{label:'Horror Anime',jikan:'anime?genres=14&order_by=score&sort=desc&limit=20'},
+  slice:{label:'Slice of Life',jikan:'anime?genres=36&order_by=score&sort=desc&limit=20'},
+  isekai:{label:'Isekai Anime',jikan:'anime?genres=62&order_by=score&sort=desc&limit=20'}
+};
+
+/* ─── SERVERS ─── */
+function getSrcs(type,id,s,ep){
+  /* cinetaro embed + fallbacks */
+  if(type==='movie')return[
+    `https://api.cinetaro.buzz/embed/movie/${id}`,
+    `https://vidsrc.to/embed/movie/${id}`,
+    `https://vidsrc.xyz/embed/movie?tmdb=${id}`,
+    `https://embed.su/embed/movie/${id}`,
+    `https://player.autoembed.cc/embed/movie/${id}`,
+    `https://multiembed.mov/?video_id=${id}&tmdb=1`
+  ];
+  return[
+    `https://api.cinetaro.buzz/embed/tv/${id}/${s}/${ep}`,
+    `https://vidsrc.to/embed/tv/${id}/${s}/${ep}`,
+    `https://vidsrc.xyz/embed/tv?tmdb=${id}&season=${s}&episode=${ep}`,
+    `https://embed.su/embed/tv/${id}/${s}/${ep}`,
+    `https://player.autoembed.cc/embed/tv/${id}/${s}/${ep}`,
+    `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${ep}`
+  ];
+}
+
+/* ─── STATE ─── */
+let pendPro=null,heroAdded=false,myA=[],myM=[],mlTab='anime';
+const cdata={};
+
+/* ─── PETALS ─── */
+function startPetals(){
+  const cv=document.getElementById('petals');const ctx=cv.getContext('2d');
+  cv.width=innerWidth;cv.height=innerHeight;
+  const ps=Array.from({length:55},()=>({x:Math.random()*cv.width,y:Math.random()*-cv.height,sz:5+Math.random()*9,sp:1.1+Math.random()*2.3,dr:(Math.random()-.5)*1.1,r:Math.random()*360,rs:(Math.random()-.5)*3,op:.5+Math.random()*.5}));
+  (function draw(){ctx.clearRect(0,0,cv.width,cv.height);ps.forEach(p=>{ctx.save();ctx.globalAlpha=p.op;ctx.translate(p.x,p.y);ctx.rotate(p.r*Math.PI/180);ctx.beginPath();ctx.ellipse(0,0,p.sz/2,p.sz,0,0,Math.PI*2);ctx.fillStyle='#ffb7c5';ctx.fill();ctx.restore();p.y+=p.sp;p.x+=p.dr;p.r+=p.rs;if(p.y>cv.height){p.y=-20;p.x=Math.random()*cv.width;}});requestAnimationFrame(draw);})();
+}
+window.addEventListener('load',()=>{setTimeout(()=>{document.getElementById('PS').classList.add('on');startPetals();},3200);});
+window.addEventListener('scroll',()=>{document.getElementById('nav').classList.toggle('sc',scrollY>50);});
+
+/* ─── PROFILE ─── */
+function selPro(name,needPin){
+  if(needPin){pendPro=name;document.getElementById('pname').textContent=name;document.getElementById('perr').textContent='';['d1','d2','d3','d4'].forEach(id=>document.getElementById(id).value='');document.getElementById('PM').classList.add('on');setupPin();document.getElementById('d1').focus();}
+  else launch(name);
+}
+function setupPin(){
+  const ids=['d1','d2','d3','d4'];
+  ids.forEach((id,i)=>{
+    const el=document.getElementById(id);
+    el.oninput=()=>{el.value=el.value.replace(/\D/,'');if(el.value&&i<3)document.getElementById(ids[i+1]).focus();if(ids.every(d=>document.getElementById(d).value))checkPin();};
+    el.onkeydown=e=>{if(e.key==='Backspace'&&!el.value&&i>0)document.getElementById(ids[i-1]).focus();};
+  });
+}
+function checkPin(){
+  const en=['d1','d2','d3','d4'].map(id=>document.getElementById(id).value).join('');
+  if(en===PROS[pendPro].pin){document.getElementById('PM').classList.remove('on');launch(pendPro);}
+  else{document.getElementById('perr').textContent='Incorrect PIN. Try again.';['d1','d2','d3','d4'].forEach(id=>document.getElementById(id).value='');document.getElementById('d1').focus();}
+}
+function cnlPin(){document.getElementById('PM').classList.remove('on');pendPro=null;}
+function launch(name){
+  document.getElementById('PS').style.display='none';
+  document.getElementById('MA').classList.add('on');
+  const av=document.getElementById('nav-av');av.src=PROS[name].av;av.style.display='block';
+  loadAll();
+}
+
+/* ─── NAV ─── */
+function goHome(){document.getElementById('ts').scrollIntoView({behavior:'smooth'});}
+function jmp(id){document.getElementById(id).scrollIntoView({behavior:'smooth'});}
+function catClick(cat){
+  const el=document.querySelector(`[data-cat="${cat}"]`);
+  if(el)catTab(el);
+  jmp('ts');
+}
+function esc(s){return(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');}
+
+/* ─── CAT TAB CLICK ─── */
+async function catTab(el){
+  document.querySelectorAll('.ct').forEach(t=>t.classList.remove('act'));
+  el.classList.add('act');
+  const cat=el.dataset.cat;
+  const cfg=CAT_CFG[cat];
+  if(!cfg)return;
+  document.getElementById('mct').textContent=cfg.label;
+  ld('mc');
+  const d=await jikanFetch(cfg.jikan);
+  cdata['mc']=d;
+  renderPortrait('mc',d);
+}
+
+/* ─── API HELPERS ─── */
+
+/* Jikan with retry on 429 */
+async function jikanFetch(path,retries=3){
+  const base='https://api.jikan.moe/v4/';
+  for(let i=0;i<retries;i++){
+    try{
+      const r=await fetch(base+path);
+      if(r.status===429){await delay(1200*(i+1));continue;}
+      if(!r.ok)return[];
+      const d=await r.json();
+      return d.data||[];
+    }catch{await delay(800);}
+  }
+  return[];
+}
+
+/* AniList GraphQL — completely separate API, no rate limits for basic queries */
+async function anilistFetch(query,variables={}){
+  try{
+    const r=await fetch('https://graphql.anilist.co',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({query,variables})
+    });
+    const d=await r.json();
+    return d?.data||null;
+  }catch{return null;}
+}
+
+/* Normalize AniList media → our card format */
+function normalizeAL(m){
+  if(!m)return null;
+  return{
+    mal_id:m.idMal||m.id,
+    al_id:m.id,
+    title:m.title?.english||m.title?.romaji||m.title?.native||'Unknown',
+    images:{jpg:{large_image_url:m.coverImage?.extraLarge||m.coverImage?.large||'',image_url:m.coverImage?.large||''}},
+    score:m.averageScore?+(m.averageScore/10).toFixed(1):null,
+    episodes:m.episodes
+  };
+}
+
+function delay(ms){return new Promise(r=>setTimeout(r,ms));}
+
+/* ─── LOAD ALL — staggered to avoid rate limits ─── */
+async function loadAll(){
+  renderManga();
+
+  /* BATCH 1 — fire immediately */
+  loadSection('mc','top/anime?filter=airing&limit=20','portrait');
+  await delay(400);
+
+  /* BATCH 2 */
+  loadSection('nc','anime?status=airing&order_by=start_date&sort=desc&limit=20','portrait');
+  loadSection('movc','anime?type=movie&order_by=popularity&limit=20','portrait',true);
+  await delay(600);
+
+  /* BATCH 3 — AniList for top picks (no Jikan rate limit) */
+  loadALSection('tc', AL_TOP_PICKS, 'portrait');
+  await delay(300);
+
+  /* BATCH 4 — continue watching uses popular list */
+  loadSection('cc','top/anime?filter=bypopularity&limit=20','cw');
+  await delay(600);
+
+  /* BATCH 5 — AniList for popular this season */
+  loadALSection('psc', AL_SEASON_POPULAR, 'portrait');
+  await delay(300);
+
+  /* BATCH 6 */
+  loadSection('sc2','anime?status=airing&order_by=score&sort=desc&limit=20','portrait');
+  await delay(600);
+
+  /* BATCH 7 — AniList all time favorites */
+  loadALSection('atf', AL_ALL_TIME, 'portrait');
+  await delay(300);
+
+  /* BATCH 8 */
+  loadSection('clc','top/anime?filter=bypopularity&type=tv&page=2&limit=20','portrait');
+}
+
+async function loadSection(id,path,style,movie=false){
+  ld(id);
+  const d=await jikanFetch(path);
+  cdata[id]=d;
+  if(style==='portrait')renderPortrait(id,d,movie);
+  else if(style==='cw')renderCW(id,d);
+}
+
+async function loadALSection(id,query,style){
+  ld(id);
+  const d=await anilistFetch(query);
+  if(!d){showRetry(id);return;}
+  /* extract media list from whatever the query returns */
+  const raw=d.trending?.media||d.seasonPopular?.media||d.allTime?.media||[];
+  const list=raw.map(normalizeAL).filter(Boolean);
+  cdata[id]=list;
+  if(style==='portrait')renderPortrait(id,list);
+}
+
+/* ─── ANILIST QUERIES ─── */
+const AL_FIELDS=`id idMal title{english romaji native} coverImage{extraLarge large} averageScore episodes`;
+const AL_TOP_PICKS=`{trending:Page(page:1,perPage:20){media(type:ANIME,sort:TRENDING_DESC,isAdult:false){${AL_FIELDS}}}}`;
+const AL_SEASON_POPULAR=`{seasonPopular:Page(page:1,perPage:20){media(type:ANIME,sort:POPULARITY_DESC,season:SPRING,seasonYear:2025,isAdult:false){${AL_FIELDS}}}}`;
+const AL_ALL_TIME=`{allTime:Page(page:1,perPage:20){media(type:ANIME,sort:FAVOURITES_DESC,isAdult:false){${AL_FIELDS}}}}`;
+
+/* ─── RENDER PORTRAIT ─── */
+function renderPortrait(id,list,movie=false){
+  const c=document.getElementById(id);
+  if(!list||!list.length){showRetry(id);return;}
+  c.innerHTML=list.map(a=>{
+    const img=a.images?.jpg?.large_image_url||a.images?.jpg?.image_url||'';
+    const fv=myA.some(x=>x.id===a.mal_id);
+    const mid=a.mal_id||a.al_id;
+    return`<div class="pc" onclick="openAnime(${mid},'${esc(a.title)}','${movie?'movie':'tv'}')">
+      <div class="pci">
+        <img src="${img}" alt="${esc(a.title)}" loading="lazy" onerror="this.src='https://via.placeholder.com/168x238/23252B/F47521?text=Anime'">
+        <div class="pco"><div class="pplay">&#9654;</div></div>
+        <button class="pfv ${fv?'fv':''}" onclick="event.stopPropagation();togA(${mid},'${esc(a.title)}','${img}',this)">${fv?'&#9829;':'&#9825;'}</button>
+      </div>
+      <div class="pcf">
+        <div class="pct">${a.title||'Unknown'}</div>
+        <div class="pcs">Sub | Dub</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ─── RENDER CONTINUE WATCHING ─── */
+function renderCW(id,list){
+  const c=document.getElementById(id);
+  if(!list||!list.length){showRetry(id);return;}
+  c.innerHTML=list.map((a,i)=>{
+    const img=a.images?.jpg?.large_image_url||a.images?.jpg?.image_url||'';
+    const fv=myA.some(x=>x.id===a.mal_id);
+    const pct=Math.floor(Math.random()*70)+15;
+    const tLeft=`${Math.floor(Math.random()*30)+5}m left`;
+    const lbl=EP_LABELS[i%EP_LABELS.length];
+    const subDub=Math.random()>.4?'Dub | Sub':'Subtitled';
+    return`<div class="cwc" onclick="openAnime(${a.mal_id},'${esc(a.title)}','tv')">
+      <div class="cw-img">
+        <img src="${img}" alt="${esc(a.title)}" loading="lazy" onerror="this.src='https://via.placeholder.com/290x163/23252B/F47521?text=Anime'">
+        <div class="cw-play"><div class="cw-play-btn">&#9654;</div></div>
+        <div class="cw-timeleft">${tLeft}</div>
+        <div class="cw-prog"><div class="cw-prog-fill" style="width:${pct}%"></div></div>
+        <button class="cw-fav ${fv?'fv':''}" onclick="event.stopPropagation();togA(${a.mal_id},'${esc(a.title)}','${img}',this)">${fv?'&#9829;':'&#9825;'}</button>
+      </div>
+      <div class="cw-info">
+        <div class="cw-show">${lbl[0]}</div>
+        <div class="cw-ep">${lbl[1]}</div>
+        <div class="cw-sub"><span>${subDub}</span><button class="cw-more">&#8942;</button></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showRetry(id){
+  document.getElementById(id).innerHTML=`<div class="err-msg">Could not load — Jikan rate limit. <button onclick="retrySection('${id}')">Retry</button></div>`;
+}
+
+/* retry map */
+const RETRY_MAP={
+  mc:'top/anime?filter=airing&limit=20',
+  cc:'top/anime?filter=bypopularity&limit=20',
+  nc:'anime?status=airing&order_by=start_date&sort=desc&limit=20',
+  sc2:'anime?status=airing&order_by=score&sort=desc&limit=20',
+  movc:'anime?type=movie&order_by=popularity&limit=20',
+  clc:'top/anime?filter=bypopularity&type=tv&page=2&limit=20'
+};
+async function retrySection(id){
+  if(id==='tc'){loadALSection('tc',AL_TOP_PICKS,'portrait');return;}
+  if(id==='psc'){loadALSection('psc',AL_SEASON_POPULAR,'portrait');return;}
+  if(id==='atf'){loadALSection('atf',AL_ALL_TIME,'portrait');return;}
+  const path=RETRY_MAP[id];if(!path)return;
+  ld(id);
+  const d=await jikanFetch(path);
+  cdata[id]=d;
+  if(id==='cc')renderCW(id,d);
+  else renderPortrait(id,d,id==='movc');
+}
+
+/* ─── VIEW ALL ─── */
+function openVA(titleOrId,carId){
+  const title=document.getElementById(titleOrId)?.textContent||titleOrId;
+  document.getElementById('vat').textContent=title;
+  const data=cdata[carId]||[];
+  const g=document.getElementById('vag');
+  if(!data.length){
+    g.innerHTML='<p style="color:#666;grid-column:1/-1;text-align:center;padding:50px">Still loading — please wait a moment and try again.</p>';
+  }else{
+    g.innerHTML=data.map(a=>{
+      const img=a.images?.jpg?.large_image_url||a.images?.jpg?.image_url||'';
+      const mid=a.mal_id||a.al_id;
+      return`<div class="pc" style="width:100%" onclick="openAnime(${mid},'${esc(a.title)}','tv');closeVA()">
+        <div class="pci" style="width:100%;height:0;padding-bottom:141%;position:relative;">
+          <img src="${img}" alt="${esc(a.title)}" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;" onerror="this.src='https://via.placeholder.com/168x238/23252B/F47521?text=Anime'">
+          <div class="pco" style="position:absolute;inset:0;"><div class="pplay">&#9654;</div></div>
+        </div>
+        <div class="pcf"><div class="pct">${a.title||'Unknown'}</div><div class="pcs">Sub | Dub</div></div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('VA').classList.add('on');document.body.style.overflow='hidden';
+}
+function closeVA(){document.getElementById('VA').classList.remove('on');document.body.style.overflow='';}
+
+/* ─── MANGA ─── */
+function renderManga(){
+  document.getElementById('mgcar').innerHTML=MANGA.map((m,i)=>`
+    <div class="mgc" onclick="window.open('${m.l}','_blank')">
+      <div class="mgcv">
+        <img src="${m.i}" alt="${m.t}" loading="lazy" onerror="this.src='https://via.placeholder.com/150x225/141519/F47521?text=Manga'">
+        <div class="mglbl"><span class="mgtg">MANGA</span></div>
+        <button class="mgfv" onclick="event.stopPropagation();togM(${i},this)">&#9825;</button>
+      </div>
+      <div class="mgif"><div class="mgit">${m.t}</div><div class="mgiv">${m.v}</div></div>
+    </div>`).join('');
+}
+
+/* ─── MY LIST ─── */
+function togA(id,title,img,btn){
+  const idx=myA.findIndex(x=>x.id===id);
+  if(idx>=0){myA.splice(idx,1);btn.innerHTML='&#9825;';btn.classList.remove('fv');}
+  else{myA.push({id,title,img});btn.innerHTML='&#9829;';btn.classList.add('fv');}
+}
+function togM(i,btn){
+  const m=MANGA[i];const idx=myM.findIndex(x=>x.t===m.t);
+  if(idx>=0){myM.splice(idx,1);btn.innerHTML='&#9825;';btn.classList.remove('fv');}
+  else{myM.push(m);btn.innerHTML='&#9829;';btn.classList.add('fv');}
+}
+function togHero(){
+  heroAdded=!heroAdded;const b=document.getElementById('hlb');
+  b.textContent=heroAdded?'My List':'+ My List';b.classList.toggle('add',heroAdded);
+  if(heroAdded&&!myA.find(a=>a.id===16498))myA.push({id:16498,title:'Attack on Titan',img:'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=400'});
+  else myA=myA.filter(a=>a.id!==16498);
+}
+function openML(){renderML();document.getElementById('MLP').classList.add('on');document.body.style.overflow='hidden';}
+function closeML(){document.getElementById('MLP').classList.remove('on');document.body.style.overflow='';}
+function swML(tab,el){mlTab=tab;document.querySelectorAll('.mlt').forEach(t=>t.classList.remove('act'));el.classList.add('act');renderML();}
+function renderML(){
+  const list=mlTab==='anime'?myA:myM;const g=document.getElementById('mlg');const name=mlTab;
+  if(!list.length){g.innerHTML=`<div class="mle">No ${name} saved yet.<br>Click the heart on any title to add it!</div>`;return;}
+  g.innerHTML=list.map((item,i)=>{
+    const title=item.title||item.t||'';const img=item.img||item.i||'';const link=item.link||item.l||'';
+    return`<div class="mlc" onclick="${mlTab==='anime'?`openAnime(${item.id},'${esc(title)}','tv')`:`window.open('${link}','_blank')`}">
+      <img src="${img}" alt="${esc(title)}" onerror="this.src='https://via.placeholder.com/168x225/23252B/F47521?text=No+Image'">
+      <div class="mlci"><div class="mlct">${title}</div><div class="mlcs">${name}</div></div>
+      <button class="mlrm" onclick="event.stopPropagation();rmML(${i})">&#215;</button>
+    </div>`;
+  }).join('');
+}
+function rmML(i){if(mlTab==='anime')myA.splice(i,1);else myM.splice(i,1);renderML();}
+
+/* ─── VIDEO MODAL ─── */
+let curVid={id:null,type:'tv'};
+async function openAnime(id,title,type){
+  curVid={id,type};
+  document.getElementById('vmtl').textContent=title;
+  document.getElementById('VM').classList.add('on');
+  document.body.style.overflow='hidden';
+  const srv=document.getElementById('srvsel');
+  srv.innerHTML='<option value="">Select Server</option>';
+  const labels=['Cinetaro','VidSrc','VidSrc.xyz','Embed.su','AutoEmbed','MultiEmbed'];
+  getSrcs(type,id,1,1).forEach((url,i)=>{
+    const o=document.createElement('option');o.value=url;o.textContent=labels[i]||`Server ${i+1}`;srv.appendChild(o);
+  });
+  if(type==='tv'){
+    document.getElementById('ssel').style.display='block';
+    document.getElementById('esel').style.display='block';
+    try{
+      const r=await fetch(`https://api.jikan.moe/v4/anime/${id}/episodes`);
+      const d=await r.json();
+      if(d.data?.length)document.getElementById('esel').innerHTML=d.data.slice(0,24).map((ep,i)=>`<option value="${i+1}">E${i+1} - ${ep.title||'Episode '+(i+1)}</option>`).join('');
+    }catch{}
+    document.getElementById('esel').onchange=()=>reloadSrc();
+    document.getElementById('ssel').onchange=()=>reloadSrc();
+  }else{
+    document.getElementById('ssel').style.display='none';document.getElementById('esel').style.display='none';
+  }
+  if(srv.options.length>1){srv.selectedIndex=1;document.getElementById('mif').src=srv.value;}
+  srv.onchange=e=>{if(e.target.value)reloadSrc(e.target.value);};
+}
+function reloadSrc(force=null){
+  if(force){document.getElementById('mif').src=force;return;}
+  const s=document.getElementById('ssel').value.replace(/\D/g,'')||1;
+  const ep=document.getElementById('esel').value||1;
+  const idx=document.getElementById('srvsel').selectedIndex;
+  const srcs=getSrcs(curVid.type,curVid.id,s,ep);
+  if(srcs[idx-1])document.getElementById('mif').src=srcs[idx-1];
+}
+function closeVM(){document.getElementById('VM').classList.remove('on');document.getElementById('mif').src='';document.body.style.overflow='';}
+
+/* ─── SEARCH ─── */
+async function doSearch(ev){
+  if(ev.key!=='Enter')return;
+  const q=document.getElementById('si').value.trim();if(!q)return;
+  document.getElementById('mct').textContent=`Search: "${q}"`;
+  ld('mc');jmp('ts');
+  const d=await jikanFetch(`anime?q=${encodeURIComponent(q)}&limit=20`);
+  cdata['mc']=d;renderPortrait('mc',d);
+}
+
+function ld(id){document.getElementById(id).innerHTML='<div class="dots"><span></span><span></span><span></span></div>';}
+
+document.addEventListener('keydown',ev=>{if(ev.key==='Escape'){closeVM();closeML();closeVA();cnlPin();}});
+</script>
+</body>
+</html>
